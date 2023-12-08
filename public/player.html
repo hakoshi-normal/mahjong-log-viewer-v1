@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <script type="text/javascript">
+        window.onload = async function() {
+            let url = new URL(window.location.href);
+            let name = url.searchParams.get('name');
+
+            const response = await fetch("/myrank",{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({name})
+            })
+            // const jsonData = JSON.parse(await response.text());
+        }
+    </script>
+  </head>
+  <body>
+    これはてすっとととととっと
+    <div>
+      <canvas id="myChart"></canvas>
+    </div>
+    <div id="wrapper"></div>
+  </body>
+</html>

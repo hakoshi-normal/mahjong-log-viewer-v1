@@ -20,6 +20,10 @@
 
         const response2 = await fetch("/table");
         const jsonData2 = JSON.parse(await response2.text());
+        for (var i = 0; i < jsonData2['data'].length; i++){
+          var name = jsonData2['data'][i][0];
+          jsonData2['data'][i][0] = gridjs.html(`<a href='player.html?name=${name}'>${name}</a>`);
+        }
         new gridjs.Grid(jsonData2).render(document.getElementById("wrapper"));
       };
     </script>
