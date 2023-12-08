@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <link
+      href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css"
+      rel="stylesheet"
+    />
+    <title>戦績ログ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+    <script type="text/javascript">
+      window.onload = async function() {
+        // データ取得
+        const response = await fetch("/line-chart");
+        const jsonData = JSON.parse(await response.text());
+        const ctx = document.getElementById('myChart');
+        new Chart(ctx, jsonData);
+
+        const response2 = await fetch("/table");
+        const jsonData2 = JSON.parse(await response2.text());
+        new gridjs.Grid(jsonData2).render(document.getElementById("wrapper"));
+      };
+    </script>
+     
+
+  </head>
+  <body>
+    <div>
+      <canvas id="myChart"></canvas>
+    </div>
+    <div id="wrapper"></div>
+  </body>
+</html>
