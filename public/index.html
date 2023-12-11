@@ -1,39 +1,129 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="utf-8">
-    <link
-      href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css"
-      rel="stylesheet"
-    />
-    <title>戦績ログ</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-    <script type="text/javascript">
-      window.onload = async function() {
-        // データ取得
-        const response = await fetch("/line-chart");
-        const jsonData = JSON.parse(await response.text());
-        const ctx = document.getElementById('myChart');
-        new Chart(ctx, jsonData);
 
-        const response2 = await fetch("/table");
-        const jsonData2 = JSON.parse(await response2.text());
-        for (var i = 0; i < jsonData2['data'].length; i++){
-          var name = jsonData2['data'][i][0];
-          jsonData2['data'][i][0] = gridjs.html(`<a href='player.html?name=${name}'>${name}</a>`);
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <link href="styles/style.css" rel="stylesheet" />
+  <link id="original_stylesheet" href="styles/style_dark.css" rel="stylesheet" />
+  <link id="tabulator_stylesheet" href="https://unpkg.com/tabulator-tables/dist/css/tabulator_midnight.css"
+    rel="stylesheet" />
+  <title>戦績ログ</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+  <script type="text/javascript">
+    var myChart = null;
+    var myTable = null;
+
+    async function draw_line_chart(first_date, last_date, mode) {
+      const response = await fetch("/line-chart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_date, last_date, mode })
+      });
+      const jsonData = JSON.parse(await response.text());
+      const ctx = document.getElementById('chart');
+
+      function skipped(ctx, value, idx) {
+        if (ctx.p0.skip || ctx.p1.skip) {
+          return value;
+        } else if (ctx.p0.parsed.y == ctx.p1.parsed.y && ctx.p1.parsed.x == idx) {
+          return value;
+        } else {
+          return undefined;
         }
-        new gridjs.Grid(jsonData2).render(document.getElementById("wrapper"));
-      };
-    </script>
-     
+      }
+      for (var i = 0; i < jsonData.data.datasets.length; i++) {
+        jsonData.data.datasets[i].segment = { borderDash: ctx => skipped(ctx, [6, 6], jsonData.data.labels.length - 1), }
+        jsonData.data.datasets[i].spanGaps = true;
+      }
 
-  </head>
-  <body>
+      if (myChart != null) {
+        myChart.destroy();
+      }
+
+      myChart = new Chart(ctx, jsonData);
+      myChart.canvas.parentNode.style.height = '50%';
+      myChart.canvas.parentNode.style.width = '50%';
+    }
+
+    async function draw_table(first_date, last_date, mode) {
+      const response = await fetch("/table", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_date, last_date, mode })
+      });
+      const jsonData = JSON.parse(await response.text());
+
+      if (myTable != null) {
+        myTable.destroy();
+      }
+      var myTable = new Tabulator("#table", jsonData);
+    }
+
+    function draw_figs() {
+      let first_date = document.getElementById("first_date").value.replace(/\-/g, "/");
+      let last_date = document.getElementById("last_date").value.replace(/\-/g, "/");
+      let mode = document.getElementById("mahjong_mode").value;
+      draw_line_chart(first_date, last_date, mode);
+      draw_table(first_date, last_date, mode);
+    }
+
+    function change_color() {
+      if (document.getElementById("darkmode").checked) {
+        // Chart.defaults.borderColor = 'white';
+        Chart.defaults.color = "white";
+        document.getElementById("original_stylesheet").href = "styles/style_dark.css";
+        document.getElementById("tabulator_stylesheet").href = "https://unpkg.com/tabulator-tables/dist/css/tabulator_midnight.css";
+      } else {
+        // Chart.defaults.borderColor = 'black';
+        Chart.defaults.color = "F888";
+        document.getElementById("original_stylesheet").href = "styles/style_light.css";
+        document.getElementById("tabulator_stylesheet").href = "https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css";
+      }
+      draw_figs();
+    }
+
+
+    window.onload = async function () {
+      // Chart.defaults.borderColor = 'black';
+      Chart.defaults.color = "white";
+      const response = await fetch("/get_start_date", { headers: { "content-Type": "text/plain" } });
+      document.getElementById("first_date").value = await response.text();
+      var today = new Date();
+      format = 'YYYY-MM-DD';
+      format = format.replace("YYYY", today.getFullYear());
+      format = format.replace("MM", ("0" + (today.getMonth() + 1)).slice(-2));
+      format = format.replace("DD", ("0" + today.getDate()).slice(-2));
+      document.getElementById("last_date").value = format;
+
+      draw_figs();
+    };
+  </script>
+</head>
+
+<body>
+  <div id="config">
     <div>
-      <canvas id="myChart"></canvas>
+      <input type="date" id="first_date" onchange="draw_figs()">
+      から
+      <input type="date" id="last_date" onchange="draw_figs()">
+      までの
+      <select id="mahjong_mode" onchange="draw_figs()">
+        <option value="sanma">三人麻雀</option>
+        <option value="yonma">四人麻雀</option>
+      </select>
     </div>
-    <div id="wrapper"></div>
-  </body>
+    <div>ダークモード
+      <input id="darkmode" type="checkbox" onchange="change_color()" checked>
+    </div>
+  </div>
+  <div>
+    <canvas id="chart"></canvas>
+  </div>
+  <br>
+  <div id="table"></div>
+</body>
+
 </html>

@@ -1,0 +1,17 @@
+body {
+    background-color: black;
+}
+
+#config {
+    text-align: left;
+    color: white;
+}
+
+input, select {
+    background: black;
+    color: white;
+}
+
+.name_link{
+    color: white;
+}

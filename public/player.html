@@ -3,19 +3,23 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
+    <title></title>
     <script type="text/javascript">
         window.onload = async function() {
-            let url = new URL(window.location.href);
-            let name = url.searchParams.get('name');
+          let url = new URL(window.location.href);
+          let name = url.searchParams.get('name');
 
-            const response = await fetch("/myrank",{
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({name})
-            })
-            // const jsonData = JSON.parse(await response.text());
+          const response = await fetch("/myrank",{
+              method: "POST",
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({name})
+          })
+          const jsonData = await response.text();
+          var new_title = `${jsonData} のページ`;
+          console.log(new_title)
+          document.title = new_title;
         }
     </script>
   </head>
