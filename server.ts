@@ -288,7 +288,6 @@ Deno.serve(async (req) => {
         //   target: "_blank",
         // },
       },
-      { title: "試合数", field: "num_games" },
       { title: "累計ポイント", field: "total_point", sorter: "number" },
       { title: "平均着順", field: "mean_rank" },
       { title: "トップ率", field: "top_rate" },
@@ -298,6 +297,7 @@ Deno.serve(async (req) => {
       { title: "ワーストスコア", field: "worst_score" },
       { title: "飛び率", field: "minus_rate" },
       { title: "連勝数", field: "winning" },
+      { title: "試合数", field: "num_games" },
     ];
     grid["data"] = [];
     for (var i = 0; i < Object.keys(nan_scores).length; i++) {
