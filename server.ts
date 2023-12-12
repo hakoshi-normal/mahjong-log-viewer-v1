@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
     }
   }
 
-
   // 個人スコアまとめ
   function generate_nan_scores(first_d, last_d, mode) {
     var first_day = new Date(first_d);
@@ -276,7 +275,7 @@ Deno.serve(async (req) => {
     return nan_scores;
   }
 
-  function generate_info(nan_scores) {
+  function generate_info(nan_scores, mode) {
     var grid = {};
     grid["columns"] = [
       {
@@ -293,8 +292,7 @@ Deno.serve(async (req) => {
       { title: "累計ポイント", field: "total_point", sorter: "number" },
       { title: "平均着順", field: "mean_rank" },
       { title: "トップ率", field: "top_rate" },
-      { title: "二着率", field: "second_rate" },
-      { title: "ラス率", field: "third_rate" },
+      { title: "ラス率", field: "last_rate" },
       { title: "ラス回避率", field: "las_evasion_rate" },
       { title: "ベストスコア", field: "best_score" },
       { title: "ワーストスコア", field: "worst_score" },
@@ -319,15 +317,18 @@ Deno.serve(async (req) => {
       var top = nan_scores[name]["results"].filter((value) =>
         value == 1
       ).length;
-      var second = nan_scores[name]["results"].filter((value) =>
-        value == 2
+      if (mode == "sanma") {
+        var last = nan_scores[name]["results"].filter((value) =>
+        value == 3
       ).length;
-      var third =
-        nan_scores[name]["results"].filter((value) => value == 3).length;
+      }else{
+        var last = nan_scores[name]["results"].filter((value) =>
+        value == 4
+      ).length;
+      }
       var top_rate = Math.round((top / num_games) * 100) / 100;
-      var second_rate = Math.round((second / num_games) * 100) / 100;
-      var third_rate = Math.round((third / num_games) * 100) / 100;
-      var las_evasion_rate = Math.round(((top + second) / num_games) * 100) /
+      var last_rate = Math.round((last / num_games) * 100) / 100;
+      var las_evasion_rate = Math.round(((num_games-last) / num_games) * 100) /
         100;
       var best_score = Math.max(...nan_scores[name]["scores"]);
       var worst_score = Math.min(...nan_scores[name]["scores"]);
@@ -353,8 +354,7 @@ Deno.serve(async (req) => {
         total_point,
         mean_rank,
         top_rate,
-        second_rate,
-        third_rate,
+        last_rate,
         las_evasion_rate,
         best_score,
         worst_score,
@@ -426,7 +426,7 @@ Deno.serve(async (req) => {
   if (req.method === "POST" && pathname === "/table") {
     var requestJson = await req.json();
     var nan_scores = generate_nan_scores(requestJson.first_date, requestJson.last_date, requestJson.mode);
-    var info = generate_info(nan_scores);
+    var info = generate_info(nan_scores, requestJson.mode);
     var config = {
       layout: "fitColumns", //fit columns to width of table
       // responsiveLayout:"hide",  //hide columns that don't fit on the table
