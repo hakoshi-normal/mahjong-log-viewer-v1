@@ -1,6 +1,11 @@
 // deno run --watch --allow-net --allow-read --allow-env server.ts
 import { serveDir } from "https://deno.land/std@0.151.0/http/file_server.ts";
 
+const rank_pt3 = [40, 0, -25];
+const back_pt3 = 40000;
+const rank_pt4 = [50, 10, -10, -30];
+const back_pt4 = 30000;
+
 Deno.serve(async (req) => {
   const pathname = new URL(req.url).pathname;
   console.log(pathname);
@@ -39,13 +44,9 @@ Deno.serve(async (req) => {
   function generate_nan_scores(first_d, last_d, mode) {
     var first_day = new Date(first_d);
     var last_day = new Date(last_d);
-    const rank_pt3 = [40, 0, -25];
-    const back_pt3 = 40000;
-    const rank_pt4 = [50, 10, -10, -30];
-    const back_pt4 = 30000;
     var nan_scores: { [key: string]: any } = {};
     var players: string[] = [];
-    if (mode == "sanma"){
+    if (mode == "sanma") {
       for (var i = 1; i < values.length; i++) {
         if (values[i][2] == "三南") {
           var tmp_score3: any[] = [];
@@ -79,7 +80,8 @@ Deno.serve(async (req) => {
             for (var k = 0; k < tmp_score3.length; k++) {
               nan_scores[tmp_score3[k]["name"]]["results"].push(k + 1);
               var pt = Math.round(
-                (rank_pt3[k] + (tmp_score3[k]["score"] - back_pt3) * 0.001) * 10,
+                (rank_pt3[k] + (tmp_score3[k]["score"] - back_pt3) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score3[k]["name"]]["pts"].push(pt);
             }
@@ -95,7 +97,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score3[0]["name"]]["pts"].push(pt);
               nan_scores[tmp_score3[1]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt3[2] + (tmp_score3[2]["score"] - back_pt3) * 0.001) * 10,
+                (rank_pt3[2] + (tmp_score3[2]["score"] - back_pt3) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score3[2]["name"]]["pts"].push(pt);
             } else { // 同点2着
@@ -103,7 +106,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score3[1]["name"]]["results"].push(2);
               nan_scores[tmp_score3[2]["name"]]["results"].push(2);
               var pt = Math.round(
-                (rank_pt3[0] + (tmp_score3[0]["score"] - back_pt3) * 0.001) * 10,
+                (rank_pt3[0] + (tmp_score3[0]["score"] - back_pt3) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score3[0]["name"]]["pts"].push(pt);
               var pt = Math.round(
@@ -159,7 +163,8 @@ Deno.serve(async (req) => {
             for (var k = 0; k < tmp_score4.length; k++) {
               nan_scores[tmp_score4[k]["name"]]["results"].push(k + 1);
               var pt = Math.round(
-                (rank_pt4[k] + (tmp_score4[k]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[k] + (tmp_score4[k]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[k]["name"]]["pts"].push(pt);
             }
@@ -176,11 +181,13 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
               nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt4[2] + (tmp_score4[2]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[2] + (tmp_score4[2]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
             } else if (tmp_score4[1]["score"] == tmp_score4[2]["score"]) { // 同点2着
@@ -189,7 +196,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[2]["name"]]["results"].push(2);
               nan_scores[tmp_score4[3]["name"]]["results"].push(4);
               var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
               var pt = Math.round(
@@ -199,7 +207,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
               nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
             } else { // 同点3着
@@ -208,11 +217,13 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[2]["name"]]["results"].push(3);
               nan_scores[tmp_score4[3]["name"]]["results"].push(3);
               var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt4[1] + (tmp_score4[1]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[1] + (tmp_score4[1]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
               var pt = Math.round(
@@ -239,7 +250,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
               nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
               var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
             } else { // 下位3名同着
@@ -248,7 +260,8 @@ Deno.serve(async (req) => {
               nan_scores[tmp_score4[2]["name"]]["results"].push(2);
               nan_scores[tmp_score4[3]["name"]]["results"].push(2);
               var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
+                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
+                  10,
               ) / 10;
               nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
               var pt = Math.round(
@@ -291,8 +304,8 @@ Deno.serve(async (req) => {
       { title: "累計ポイント", field: "total_point", sorter: "number" },
       { title: "平均着順", field: "mean_rank" },
       { title: "トップ率", field: "top_rate" },
-      { title: "ラス率", field: "last_rate" },
       { title: "ラス回避率", field: "las_evasion_rate" },
+      { title: "原点確保率", field: "os_rate" },
       { title: "ベストスコア", field: "best_score" },
       { title: "ワーストスコア", field: "worst_score" },
       { title: "飛び率", field: "minus_rate" },
@@ -302,7 +315,8 @@ Deno.serve(async (req) => {
     grid["data"] = [];
     for (var i = 0; i < Object.keys(nan_scores).length; i++) {
       var name = Object.keys(nan_scores)[i];
-      var name_link = `<a class="name_link" href="player.html?name=${name}" target="_blank"  rel="noopener noreferrer">${name}</a>`;
+      var name_link =
+        `<a class="name_link" href="player.html?name=${name}" target="_blank"  rel="noopener noreferrer">${name}</a>`;
       var num_games = nan_scores[name]["days"].length;
       var total_point = Math.round(
         (nan_scores[name]["pts"].reduce((a, b) => {
@@ -319,17 +333,29 @@ Deno.serve(async (req) => {
       ).length;
       if (mode == "sanma") {
         var last = nan_scores[name]["results"].filter((value) =>
-        value == 3
-      ).length;
-      }else{
-        var last = nan_scores[name]["results"].filter((value) =>
-        value == 4
-      ).length;
+          value == 3
+        ).length;
+      } else {
+        var last =
+          nan_scores[name]["results"].filter((value) => value == 4).length;
       }
       var top_rate = Math.round((top / num_games) * 100) / 100;
       var last_rate = Math.round((last / num_games) * 100) / 100;
-      var las_evasion_rate = Math.round(((num_games-last) / num_games) * 100) /
+      var las_evasion_rate =
+        Math.round(((num_games - last) / num_games) * 100) /
         100;
+      var os_rate = 0;
+      if (mode == "sanma") {
+        var back_score = back_pt3;
+      } else {
+        var back_score = back_pt4;
+      }
+      for (var j = 0; j < nan_scores[name]["scores"].length; j++) {
+        if (nan_scores[name]["scores"][j] >= back_score) {
+          os_rate += 1;
+        }
+      }
+      os_rate = Math.round((os_rate / nan_scores[name]["scores"].length) * 100) / 100;
       var best_score = Math.max(...nan_scores[name]["scores"]);
       var worst_score = Math.min(...nan_scores[name]["scores"]);
       var minus_rate = Math.round(
@@ -354,8 +380,8 @@ Deno.serve(async (req) => {
         total_point,
         mean_rank,
         top_rate,
-        last_rate,
         las_evasion_rate,
+        os_rate,
         best_score,
         worst_score,
         minus_rate,
@@ -367,7 +393,11 @@ Deno.serve(async (req) => {
 
   if (req.method === "POST" && pathname === "/line-chart") {
     var requestJson = await req.json();
-    var nan_scores = generate_nan_scores(requestJson.first_date, requestJson.last_date, requestJson.mode);
+    var nan_scores = generate_nan_scores(
+      requestJson.first_date,
+      requestJson.last_date,
+      requestJson.mode,
+    );
     let datasets: any[] = [];
     let days_all = [];
     for (var i = 0; i < Object.keys(nan_scores).length; i++) {
@@ -425,7 +455,11 @@ Deno.serve(async (req) => {
   // 表2テスト
   if (req.method === "POST" && pathname === "/table") {
     var requestJson = await req.json();
-    var nan_scores = generate_nan_scores(requestJson.first_date, requestJson.last_date, requestJson.mode);
+    var nan_scores = generate_nan_scores(
+      requestJson.first_date,
+      requestJson.last_date,
+      requestJson.mode,
+    );
     var info = generate_info(nan_scores, requestJson.mode);
     var config = {
       layout: "fitColumns", //fit columns to width of table
@@ -450,10 +484,10 @@ Deno.serve(async (req) => {
   }
 
   // 個人ページ
-  if (req.method === "POST" && pathname === "/myrank"){
+  if (req.method === "POST" && pathname === "/myrank") {
     var name = await req.json();
     name = name["name"];
-    return new Response(name)
+    return new Response(name);
   }
 
   if (req.method === "GET" && pathname === "/get_start_date") {
