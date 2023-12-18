@@ -10,13 +10,9 @@ Deno.serve(async (req) => {
   const pathname = new URL(req.url).pathname;
   console.log(pathname);
 
-  // const sheet_id = Deno.env.get("SHEET_ID");
-  // const sheet_name = Deno.env.get("SHEET_NAME");
-  // const api_key = Deno.env.get("API_KEY");
-
-  const sheet_id = "1H5AC-FEfHIzP4zP8fP_c0BB5559-pg5HdIgHARAAMoA";
-  const sheet_name = "データベース";
-  const api_key = "AIzaSyAORFqINm3KNlP6yfY8u0SWAyhF_kUOfdk";
+  const sheet_id = Deno.env.get("SHEET_ID");
+  const sheet_name = Deno.env.get("SHEET_NAME");
+  const api_key = Deno.env.get("API_KEY");
 
   const json = fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}/values/${sheet_name}?key=${api_key}`,
