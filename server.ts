@@ -1,5 +1,6 @@
 // deno run --watch --allow-net --allow-read --allow-env server.ts
 import { serveDir } from "https://deno.land/std@0.151.0/http/file_server.ts";
+import { calc_scores } from "./calc_scores.ts";
 
 const rank_pt3 = [40, 0, -25];
 const back_pt3 = 40000;
@@ -40,6 +41,40 @@ Deno.serve(async (req) => {
     }
   }
 
+  function add_rank_pt_to_tmp_score(tmp_score, rank_pt, back_pt){
+    var rank = 1;
+    var checked = 0;
+    for (var k = 0; k < tmp_score.length; k++){
+      if (checked > k ){
+        continue
+      }
+      var pts = Math.round(
+        (rank_pt[rank-1] + (tmp_score[k]["score"] - back_pt) * 0.001) *
+          10,
+      ) / 10;
+      var same_rank = 1;
+      for (var l = k+1; l < tmp_score.length; l++){
+        if (tmp_score[k]["score"]  == tmp_score[l]["score"] ){
+          var pt = Math.round(
+            (rank_pt[rank-1+l-k] + (tmp_score[l]["score"] - back_pt) * 0.001) *
+              10,
+          ) / 10;
+          pts += pt;
+          same_rank+=1
+        }else{
+          break
+        }
+      }
+      for (var m = k; m < k+same_rank; m++){
+        tmp_score[m]["rank"] = rank;
+        tmp_score[m]["pt"] = Math.round(pts/same_rank*10)/10;
+      }
+      checked += same_rank;
+      rank += same_rank;
+    }
+    return tmp_score
+  }
+
   // 個人スコアまとめ
   function generate_nan_scores(first_d, last_d, mode) {
     var first_day = new Date(first_d);
@@ -69,63 +104,23 @@ Deno.serve(async (req) => {
                 "scores": [],
                 "results": [],
                 "pts": [],
+                "kazes": [],
               };
             }
             nan_scores[name]["days"].push(values[i][0]);
             nan_scores[name]["scores"].push(score);
           }
+
+          for (var j = 0; j < 3; j++){
+            tmp_score3[j]["kaze"] = j;
+          }
           tmp_score3.sort((a, b) => -a.score + b.score);
-          var unique_result = Array.from(new Set(tmp_scores3)).length;
-          if (unique_result == 3) { // 同着無し
-            for (var k = 0; k < tmp_score3.length; k++) {
-              nan_scores[tmp_score3[k]["name"]]["results"].push(k + 1);
-              var pt = Math.round(
-                (rank_pt3[k] + (tmp_score3[k]["score"] - back_pt3) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score3[k]["name"]]["pts"].push(pt);
-            }
-          } else if (unique_result == 2) { // 2名同着
-            if (tmp_score3[0]["score"] == tmp_score3[1]["score"]) { // 同点1着
-              nan_scores[tmp_score3[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score3[1]["name"]]["results"].push(1);
-              nan_scores[tmp_score3[2]["name"]]["results"].push(3);
-              var pt = Math.round(
-                ((rank_pt3[0] + rank_pt3[1]) / 2 +
-                  (tmp_score3[0]["score"] - back_pt3) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score3[0]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score3[1]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt3[2] + (tmp_score3[2]["score"] - back_pt3) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score3[2]["name"]]["pts"].push(pt);
-            } else { // 同点2着
-              nan_scores[tmp_score3[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score3[1]["name"]]["results"].push(2);
-              nan_scores[tmp_score3[2]["name"]]["results"].push(2);
-              var pt = Math.round(
-                (rank_pt3[0] + (tmp_score3[0]["score"] - back_pt3) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score3[0]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                ((rank_pt3[1] + rank_pt3[2]) / 2 +
-                  (tmp_score3[1]["score"] - back_pt3) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score3[1]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score3[2]["name"]]["pts"].push(pt);
-            }
-          } else { // 同点3着
-            for (var k = 0; k < tmp_score3.length; k++) {
-              nan_scores[tmp_score3[k]["name"]]["results"].push(1);
-              var pt = Math.round(
-                ((rank_pt3[0] + rank_pt3[1] + rank_pt3[2]) / 3 +
-                  (tmp_score3[0]["score"] - back_pt3) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score3[k]["name"]]["pts"].push(pt);
-            }
+          tmp_score3 = add_rank_pt_to_tmp_score(tmp_score3, rank_pt3, back_pt3)
+
+          for (var k = 0; k < tmp_score3.length; k++) {
+            nan_scores[tmp_score3[k]["name"]]["results"].push(tmp_score3[k]["rank"]);
+            nan_scores[tmp_score3[k]["name"]]["pts"].push(tmp_score3[k]["pt"]);
+            nan_scores[tmp_score3[k]["name"]]["kazes"].push(tmp_score3[k]["kaze"]);
           }
         }
       }
@@ -152,135 +147,23 @@ Deno.serve(async (req) => {
                 "scores": [],
                 "results": [],
                 "pts": [],
+                "kazes": []
               };
             }
             nan_scores[name]["days"].push(values[i][0]);
             nan_scores[name]["scores"].push(score);
           }
+          for (var j = 0; j < 4; j++){
+            tmp_score4[j]["kaze"] = j;
+          }
+          console.log(tmp_score4)
           tmp_score4.sort((a, b) => -a.score + b.score);
-          var unique_result = Array.from(new Set(tmp_scores4)).length;
-          if (unique_result == 4) { // 同着無し
-            for (var k = 0; k < tmp_score4.length; k++) {
-              nan_scores[tmp_score4[k]["name"]]["results"].push(k + 1);
-              var pt = Math.round(
-                (rank_pt4[k] + (tmp_score4[k]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[k]["name"]]["pts"].push(pt);
-            }
-          } else if (unique_result == 3) { // 2名同着
-            if (tmp_score4[0]["score"] == tmp_score4[1]["score"]) { // 同点1着
-              nan_scores[tmp_score4[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[1]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[2]["name"]]["results"].push(3);
-              nan_scores[tmp_score4[3]["name"]]["results"].push(4);
-              var pt = Math.round(
-                ((rank_pt4[0] + rank_pt4[1]) / 2 +
-                  (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt4[2] + (tmp_score4[2]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
-            } else if (tmp_score4[1]["score"] == tmp_score4[2]["score"]) { // 同点2着
-              nan_scores[tmp_score4[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[1]["name"]]["results"].push(2);
-              nan_scores[tmp_score4[2]["name"]]["results"].push(2);
-              nan_scores[tmp_score4[3]["name"]]["results"].push(4);
-              var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                ((rank_pt4[1] + rank_pt4[2]) / 2 +
-                  (tmp_score4[1]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
-            } else { // 同点3着
-              nan_scores[tmp_score4[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[1]["name"]]["results"].push(2);
-              nan_scores[tmp_score4[2]["name"]]["results"].push(3);
-              nan_scores[tmp_score4[3]["name"]]["results"].push(3);
-              var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt4[1] + (tmp_score4[1]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                ((rank_pt4[2] + rank_pt4[3]) / 2 +
-                  (tmp_score4[2]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
-            }
-          } else if (unique_result == 2) { // 3名同着
-            if (
-              tmp_score4[0]["score"] == tmp_score4[1]["score"] ==
-                tmp_score4[2]["score"]
-            ) { // 上位3名同着
-              nan_scores[tmp_score4[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[1]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[2]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[3]["name"]]["results"].push(4);
-              var pt = Math.round(
-                ((rank_pt4[0] + rank_pt4[1] + rank_pt4[2]) / 3 +
-                  (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                (rank_pt4[3] + (tmp_score4[3]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
-            } else { // 下位3名同着
-              nan_scores[tmp_score4[0]["name"]]["results"].push(1);
-              nan_scores[tmp_score4[1]["name"]]["results"].push(2);
-              nan_scores[tmp_score4[2]["name"]]["results"].push(2);
-              nan_scores[tmp_score4[3]["name"]]["results"].push(2);
-              var pt = Math.round(
-                (rank_pt4[0] + (tmp_score4[0]["score"] - back_pt4) * 0.001) *
-                  10,
-              ) / 10;
-              nan_scores[tmp_score4[0]["name"]]["pts"].push(pt);
-              var pt = Math.round(
-                ((rank_pt4[1] + rank_pt4[2] + rank_pt4[3]) / 3 +
-                  (tmp_score4[1]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[1]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[2]["name"]]["pts"].push(pt);
-              nan_scores[tmp_score4[3]["name"]]["pts"].push(pt);
-            }
-          } else { // 同点4着
-            for (var k = 0; k < tmp_score4.length; k++) {
-              nan_scores[tmp_score4[k]["name"]]["results"].push(1);
-              var pt = Math.round(
-                ((rank_pt4[0] + rank_pt4[1] + rank_pt4[2] + rank_pt4[3]) / 4 +
-                  (tmp_score4[0]["score"] - back_pt4) * 0.001) * 10,
-              ) / 10;
-              nan_scores[tmp_score4[k]["name"]]["pts"].push(pt);
-            }
+          tmp_score4 = add_rank_pt_to_tmp_score(tmp_score4, rank_pt4, back_pt4)
+
+          for (var k = 0; k < tmp_score4.length; k++) {
+            nan_scores[tmp_score4[k]["name"]]["results"].push(tmp_score4[k]["rank"]);
+            nan_scores[tmp_score4[k]["name"]]["pts"].push(tmp_score4[k]["pt"]);
+            nan_scores[tmp_score4[k]["name"]]["kazes"].push(tmp_score4[k]["kaze"]);
           }
         }
       }
@@ -308,86 +191,23 @@ Deno.serve(async (req) => {
       { title: "原点確保率", field: "os_rate" },
       { title: "ベストスコア", field: "best_score" },
       { title: "ワーストスコア", field: "worst_score" },
-      { title: "飛び率", field: "minus_rate" },
+      { title: "箱下率", field: "minus_rate" },
       { title: "連勝数", field: "winning" },
       { title: "試合数", field: "num_games" },
+      { title: "東家一着率", field: "ton_top_rate" },
+      { title: "南家一着率", field: "nan_top_rate" },
+      { title: "西家一着率", field: "sha_top_rate" },
     ];
+    if (mode == "yonma"){
+      grid["columns"].push({ title: "北家一着率", field: "pei_top_rate" });
+    }
     grid["data"] = [];
-    for (var i = 0; i < Object.keys(nan_scores).length; i++) {
-      var name = Object.keys(nan_scores)[i];
+    var datas = calc_scores( nan_scores , mode, back_pt3, back_pt4)
+    for (var i = 0; i < datas.length; i++) {
       var name_link =
-        `<a class="name_link" href="player.html?name=${name}" target="_blank"  rel="noopener noreferrer">${name}</a>`;
-      var num_games = nan_scores[name]["days"].length;
-      var total_point = Math.round(
-        (nan_scores[name]["pts"].reduce((a, b) => {
-          return a + b;
-        })) * 10,
-      ) / 10;
-      var mean_rank = Math.round(
-        (nan_scores[name]["results"].reduce((a, b) => {
-          return a + b;
-        }) / num_games) * 100,
-      ) / 100;
-      var top = nan_scores[name]["results"].filter((value) =>
-        value == 1
-      ).length;
-      if (mode == "sanma") {
-        var last = nan_scores[name]["results"].filter((value) =>
-          value == 3
-        ).length;
-      } else {
-        var last =
-          nan_scores[name]["results"].filter((value) => value == 4).length;
-      }
-      var top_rate = Math.round((top / num_games) * 100) / 100;
-      var last_rate = Math.round((last / num_games) * 100) / 100;
-      var las_evasion_rate =
-        Math.round(((num_games - last) / num_games) * 100) /
-        100;
-      var os_rate = 0;
-      if (mode == "sanma") {
-        var back_score = back_pt3;
-      } else {
-        var back_score = back_pt4;
-      }
-      for (var j = 0; j < nan_scores[name]["scores"].length; j++) {
-        if (nan_scores[name]["scores"][j] >= back_score) {
-          os_rate += 1;
-        }
-      }
-      os_rate = Math.round((os_rate / nan_scores[name]["scores"].length) * 100) / 100;
-
-      var best_score = Math.max(...nan_scores[name]["scores"]);
-      var worst_score = Math.min(...nan_scores[name]["scores"]);
-      var minus_rate = Math.round(
-        ((nan_scores[name]["scores"].filter((value) => value < 0).length) /
-          num_games) * 100,
-      ) / 100;
-      var tmp_winning = 0;
-      var winning = 0;
-      for (var j = 0; j < nan_scores[name]["results"].length; j++) {
-        if (nan_scores[name]["results"][j] == 1) {
-          tmp_winning += 1;
-        } else {
-          tmp_winning = 0;
-        }
-        if (tmp_winning > winning) {
-          winning = tmp_winning;
-        }
-      }
-      grid["data"].push({
-        "name": name_link,
-        num_games,
-        total_point,
-        mean_rank,
-        top_rate,
-        las_evasion_rate,
-        os_rate,
-        best_score,
-        worst_score,
-        minus_rate,
-        winning,
-      });
+        `<a class="name_link" href="player.html?name=${datas[i]["name"]}" target="_blank"  rel="noopener noreferrer">${datas[i]["name"]}</a>`;
+        datas[i]["name"] = name_link;
+      grid["data"].push(datas[i]);
     }
     return grid;
   }
