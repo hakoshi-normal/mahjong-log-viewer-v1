@@ -76,14 +76,16 @@ Deno.serve(async (req) => {
   }
 
   // 個人スコアまとめ
-  function generate_nan_scores(first_d, last_d, mode) {
+  function generate_nan_scores(first_d, last_d, mode, mode2) {
     var first_day = new Date(first_d);
     var last_day = new Date(last_d);
     var nan_scores: { [key: string]: any } = {};
     var players: string[] = [];
     if (mode == "sanma") {
+      var mode_key = "三南";
+      if (mode2 == "ton") { mode_key = "三東" }
       for (var i = 1; i < values.length; i++) {
-        if (values[i][2] == "三南") {
+        if (values[i][2] == mode_key) {
           var tmp_score3: any[] = [];
           var tmp_scores3: any[] = [];
           for (var j = 3; j < values[i].length; j = j + 2) {
@@ -125,8 +127,10 @@ Deno.serve(async (req) => {
         }
       }
     } else {
+      var mode_key = "四南";
+      if (mode2 == "ton") { mode_key = "四東" }
       for (var i = 1; i < values.length; i++) {
-        if (values[i][2] == "四南") {
+        if (values[i][2] == mode_key) {
           var tmp_score4: any[] = [];
           var tmp_scores4: any[] = [];
           for (var j = 3; j < values[i].length; j = j + 2) {
@@ -218,6 +222,7 @@ Deno.serve(async (req) => {
       requestJson.first_date,
       requestJson.last_date,
       requestJson.mode,
+      requestJson.mode2,
     );
     let datasets: any[] = [];
     let days_all = [];
@@ -281,6 +286,7 @@ Deno.serve(async (req) => {
       requestJson.first_date,
       requestJson.last_date,
       requestJson.mode,
+      requestJson.mode2,
     );
     var info = generate_info(nan_scores, requestJson.mode);
     var config = {

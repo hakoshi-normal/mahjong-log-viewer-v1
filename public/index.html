@@ -17,11 +17,11 @@
     var myChart = null;
     var myTable = null;
 
-    async function draw_line_chart(first_date, last_date, mode) {
+    async function draw_line_chart(first_date, last_date, mode, mode2) {
       const response = await fetch("/line-chart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_date, last_date, mode })
+        body: JSON.stringify({ first_date, last_date, mode, mode2 })
       });
       const jsonData = JSON.parse(await response.text());
       const ctx = document.getElementById('chart');
@@ -46,14 +46,14 @@
 
       myChart = new Chart(ctx, jsonData);
       myChart.canvas.parentNode.style.height = '50%';
-      myChart.canvas.parentNode.style.width = '50%';
+      myChart.canvas.parentNode.style.width = '80%';
     }
 
-    async function draw_table(first_date, last_date, mode) {
+    async function draw_table(first_date, last_date, mode, mode2) {
       const response = await fetch("/table", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_date, last_date, mode })
+        body: JSON.stringify({ first_date, last_date, mode, mode2 })
       });
       const jsonData = JSON.parse(await response.text());
 
@@ -67,8 +67,9 @@
       let first_date = document.getElementById("first_date").value.replace(/\-/g, "/");
       let last_date = document.getElementById("last_date").value.replace(/\-/g, "/");
       let mode = document.getElementById("mahjong_mode").value;
-      draw_line_chart(first_date, last_date, mode);
-      draw_table(first_date, last_date, mode);
+      let mode2 = document.getElementById("mahjong_mode2").value;
+      draw_line_chart(first_date, last_date, mode, mode2);
+      draw_table(first_date, last_date, mode, mode2);
     }
 
     function change_color() {
@@ -115,6 +116,10 @@
       <select id="mahjong_mode" onchange="draw_figs()">
         <option value="sanma">三人麻雀</option>
         <option value="yonma">四人麻雀</option>
+      </select>
+      <select id="mahjong_mode2" onchange="draw_figs()">
+        <option value="han">半荘戦</option>
+        <option value="ton">東風戦</option>
       </select>
     </div>
     <div>ダークモード
