@@ -319,7 +319,8 @@ Deno.serve(async (req) => {
   }
 
   if (req.method === "GET" && pathname === "/get_start_date") {
-    return new Response(uniqueDates[0].replace(/\//g, "-"));
+    // return new Response(uniqueDates[0].replace(/\//g, "-"));
+    return new Response("2024/05/01");
   }
 
   return serveDir(req, {
