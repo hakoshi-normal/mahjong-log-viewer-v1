@@ -113,6 +113,10 @@ Deno.serve(async (req) => {
             nan_scores[name]["scores"].push(score);
           }
 
+          if (tmp_score3.length == 0){
+            continue
+          }
+
           for (var j = 0; j < 3; j++){
             tmp_score3[j]["kaze"] = j;
           }
@@ -157,10 +161,15 @@ Deno.serve(async (req) => {
             nan_scores[name]["days"].push(values[i][0]);
             nan_scores[name]["scores"].push(score);
           }
+
+          if (tmp_score4.length == 0){
+            continue
+          }
+
           for (var j = 0; j < 4; j++){
             tmp_score4[j]["kaze"] = j;
           }
-          console.log(tmp_score4)
+
           tmp_score4.sort((a, b) => -a.score + b.score);
           tmp_score4 = add_rank_pt_to_tmp_score(tmp_score4, rank_pt4, back_pt4)
 
